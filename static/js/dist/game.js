@@ -27,6 +27,7 @@ class AcGameMenu {
 
     start() {
         this.add_listening_event();
+        this.hide();
     }
 
     add_listening_event() {
@@ -192,6 +193,10 @@ requestAnimationFrame(AC_GAME_ANIMATION);class GameMap extends AcGameObject {
         this.damage_speed = 0;
         this.friction = 0.8;
         this.spend_time = 0;
+        if (is_me) {
+            this.img = new Image();
+            this.img.src = this.playground.root.settings.photo;
+        }
     }
 
     start() {
@@ -211,7 +216,7 @@ requestAnimationFrame(AC_GAME_ANIMATION);class GameMap extends AcGameObject {
         });
         this.playground.game_map.$canvas.mousedown((e) => {
             const rect = outer.playground.game_map.ctx.canvas.getBoundingClientRect();
-            
+
             if (e.which === 3) {
                 outer.move_to(e.clientX - rect.left, e.clientY - rect.top);
             } else if (e.which === 1) {
@@ -314,10 +319,21 @@ requestAnimationFrame(AC_GAME_ANIMATION);class GameMap extends AcGameObject {
     }
 
     render() {
-        this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
+        if (this.is_me) {
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+            this.ctx.stroke();
+            this.ctx.clip();
+            this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+            this.ctx.restore();
+        }
+        else {
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+            this.ctx.fillStyle = this.color;
+            this.ctx.fill();
+        }
     }
 
     on_destroy() {
@@ -427,10 +443,82 @@ class FireBall extends AcGameObject {
     }
 }
 
+class Seetings {
+    constructor(root) {
+        this.root = root;
+        this.platform = 'web';
+        this.username = '';
+        this.photo = '';
+        this.$settings = $(`
+        <div class="ac-game-settings">
+            <div class="ac-game-settings-login">
+            </div>
+            <div class="ac-game-settings-register">
+            </div>
+        </div>
+        `);
+        this.$login = this.$settings.find('.ac-game-settings-login');
+        this.$register = this.$settings.find('.ac-game-settings-register');
+        this.root.$ac_game.append(this.$settings);
+        if (this.root.AcWingOS)
+            this.platform = 'acapp';
+        this.start();
+    }
+
+    start() {
+        this.$login.hide();
+        this.$register.hide();
+        this.get_info();
+    }
+
+    register() { // 打开注册界面
+        this.$login.hide();
+        this.$register.show();
+    }
+
+    login() {  //  打开登陆界面
+        this.$register.hide();
+        this.$login.show();
+    }
+
+    get_info() {
+        let outer = this;
+        $.ajax({
+            url: "https://app2236.acapp.acwing.com.cn/settings/get_info",
+            type: "GET",
+            data: {
+                platform: outer.platform,
+            },
+            success: function (res) {
+                console.log(res);
+                if(res.result === 'success') {
+                    outer.username = res.username;
+                    outer.photo = res.photo;
+                    outer.hide();
+                    outer.root.menu.show();
+                } else {
+                    outer.login();
+                }
+            }
+        });
+    }
+
+    hide() {
+        this.$settings.hide();
+    }
+
+    show() {
+        this.$settings.show();
+    }
+
+}
+
 export class AcGame {
-    constructor(id) {
+    constructor(id, AcWingOS) {
         this.id = id;
+        this.AcWingOS = AcWingOS;
         this.$ac_game = $('#' + id);
+        this.settings = new Seetings(this);
         this.menu = new AcGameMenu(this);
         this.playground = new AcGamePlayground(this);
         this.start();

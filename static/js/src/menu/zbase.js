@@ -27,6 +27,7 @@ class AcGameMenu {
 
     start() {
         this.add_listening_event();
+        this.hide();
     }
 
     add_listening_event() {
