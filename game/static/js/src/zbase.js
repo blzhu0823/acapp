@@ -3,9 +3,9 @@ export class AcGame {
         this.id = id;
         this.AcWingOS = AcWingOS;
         this.$ac_game = $('#' + id);
-        this.settings = new Seetings(this);
         this.menu = new AcGameMenu(this);
         this.playground = new AcGamePlayground(this);
+        this.settings = new Seetings(this);
         this.start();
     }
     start() {

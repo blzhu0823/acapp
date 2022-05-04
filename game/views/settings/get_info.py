@@ -11,7 +11,7 @@ def get_info_acapp(request):
     })
 
 def get_info_web(request):
-    if(request.user.is_authenticated):
+    if(not request.user.is_authenticated):
         return JsonResponse({
             'result': "fail",
             'error': "not logged in",
