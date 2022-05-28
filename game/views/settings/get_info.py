@@ -11,12 +11,12 @@ def get_info_acapp(request):
     })
 
 def get_info_web(request):
-    if(not request.user.is_authenticated):
+    if not request.user.is_authenticated:
         return JsonResponse({
             'result': "fail",
             'error': "not logged in",
         })
-    player = Player.objects.all()[0]
+    player = Player.objects.get(user=request.user)
     return JsonResponse({
         'result': "success",
         'username': player.user.username,

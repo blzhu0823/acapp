@@ -95,6 +95,7 @@ class Seetings {
         this.$register_submit = this.$register.find('.ac-game-settings-submit button');
         this.$register_error_message = this.$register.find('.ac-game-settings-error-message');
         this.$register_option = this.$register.find('.ac-game-settings-option');
+        this.$acwing_login = this.$settings.find('.ac-game-settings-acwing img');
 
         this.root.$ac_game.append(this.$settings);
         if (this.root.AcWingOS)
@@ -172,8 +173,12 @@ class Seetings {
     }
 
     add_listening_events() {
+        let outer = this;
         this.add_listening_events_login();
         this.add_listening_events_register();
+        this.$acwing_login.click(() => {
+            outer.acwing_login();
+        });
     }
 
     add_listening_events_login() {
@@ -226,6 +231,19 @@ class Seetings {
             }
         });
     }
+
+    acwing_login() {
+        $.ajax({
+            url: "https://app2236.acapp.acwing.com.cn/settings/acwing/apply_code",
+            type: "GET",
+            success: function (resp) {
+                if (resp.result === "success") {
+                    location.replace(resp.apply_code_url);
+                }
+            }
+        });
+    }
+
 
     hide() {
         this.$settings.hide();
